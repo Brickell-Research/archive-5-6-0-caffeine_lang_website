@@ -1,0 +1,15 @@
+*.beam
+*.ez
+/build
+erl_crash.dump
+
+#Added automatically by Lustre Dev Tools
+/.lustre
+/dist
+
+# Node modules
+honeycomb/node_modules
+editor/node_modules
+
+# OS X
+.DS_Store

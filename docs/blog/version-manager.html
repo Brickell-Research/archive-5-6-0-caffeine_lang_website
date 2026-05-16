@@ -1,0 +1,253 @@
+<!doctype html>
+<html><body><!-- lustre:map --><html lang="en"><head><meta charset="UTF-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><title>Caffeine Version Manager | Caffeine</title><link href="/images/favicon.png" rel="icon" type="image/png"><meta content="Caffeine Version Manager | Caffeine" property="og:title"><meta content="website" property="og:type"><meta content="Caffeine" property="og:site_name"><meta content="summary" name="twitter:card"><script src="/js/honeycomb.js"></script><meta content="Introducing CVM, a version manager for Caffeine inspired by rvm, for easily installing, updating, and switching between Caffeine versions." name="description"><meta content="Introducing CVM, a version manager for Caffeine inspired by rvm, for easily installing, updating, and switching between Caffeine versions." property="og:description"><meta content="https://caffeine-lang.org/blog/version-manager" property="og:url"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><link href="/css/styles.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-toml.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-docker.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-hcl.min.js"></script><script src="https://unpkg.com/prismjs-gleam@1/gleam.js"></script></head><body><header class="site-header"><nav class="nav"><a class="logo" href="/"><img alt="Caffeine" class="logo-img" src="/images/temp_caffeine_icon.png">Caffeine</a><ul class="nav-links"><li><a href="/">Home</a></li><li><a href="/tour">Tour</a></li><li><a href="/tools">Tools</a></li><li><a href="/blog">Blog</a></li></ul></nav></header><main class="main-content"><article class="blog-post"><header class="post-header"><h1>Caffeine Version Manager</h1><p class="post-date">2026-03-03 · by Rob Durst</p></header><div class="post-content"><div class="toc"></div><p><strong>I&#39;m building <a href="https://github.com/Brickell-Research/caffeine_lang">Caffeine</a>, a compiler written in Gleam that compiles service expectations to reliability artifacts.
+This post documents how our new version manager works to aid in easier installation and maintenance of a local Caffeine installation.</strong></p><hr><h1 id="Introducing-Caffeine-Version-Manager-(CVM)">Introducing Caffeine Version Manager (CVM)</h1><h2 id="Obligatory-Preface">Obligatory Preface</h2><p>First things first, using <code>cvm</code> is not needed! It&#39;s totally reasonable to just use the <code>caffeine_lang</code> brew setup. It looks a bit like this:</p><p><strong>Initial Install</strong></p><pre><code data-lang="bash">brew tap brickell-research/caffeine
+
+brew install caffeine_lang
+</code></pre><p>And to check it worked:</p><pre><code data-lang="text">➜ (rob)  caffeine -v
+caffeine 4.6.2 (Brickell Research)
+</code></pre><p><strong>Updating</strong></p><p>Normal brew update.</p><pre><code data-lang="text">brew update
+
+brew upgrade caffeine_lang
+</code></pre><p><em>We have no plans to discontinue support for this. It will continue to be updated on every release as part of our <a href="https://caffeine-lang.run/blog/designing-our-release-process">unified release process</a>.</em></p><h2 id="Ok-so-Why-CVM">Ok, so Why CVM?</h2><p>Following my talk at <a href="https://gleamgathering.com/">Gleam Gathering</a>, I wondered how well Caffeine would actually scale for larger source files. So, I worked with Claude and set up a performance test/benchmarking <a href="https://github.com/Brickell-Research/perf">repo here</a>.</p><p>It turns out there is a real scaling limit. <strong>Enter tail call optimization limitations in most JavaScript VM implementations...</strong> That&#39;s a post for another day. The important part here is I wanted to be able to test two different versions of Caffeine
+easily, side-by-side (in this case, one that was compiled with <code>deno</code> and one that was compiled with <code>bun</code>).</p><p>Thus, as a Rubyist, I thought &quot;ah! We need our own <a href="https://rvm.io/">rvm</a>!&quot;</p><h2 id="CVM">CVM</h2><p>So, we now have <code>cvm</code> <a href="https://github.com/Brickell-Research/caffeine_vm">repo here</a>. Just like the <em>normal language install</em>, we automate GitHub releases on tag pushes and also push to our Homebrew tap. A typical <code>cvm</code> process looks like this.</p><p><strong>Initial Install</strong></p><p>Install.</p><pre><code data-lang="text">brew tap brickell-research/caffeine
+
+brew install cvm
+</code></pre><p>Setup.</p><p>Add this to your path.</p><pre><code data-lang="text">export PATH=&quot;$HOME/.cvm/current:$PATH&quot;
+</code></pre><p>Install latest.</p><pre><code data-lang="text">cvm install latest
+</code></pre><p>Ensure it worked.</p><pre><code data-lang="text">➜ (rob)  caffeine -v
+caffeine 4.6.2 (Brickell Research)
+</code></pre><p><strong>Update and Switch to a Different Version</strong></p><p>First, see what is available.</p><pre><code data-lang="text">cvm list-remote
+</code></pre><p>Then install and use one of the options.</p><pre><code data-lang="text">cvm install 4.5.1
+
+cvm use 4.5.1
+</code></pre><p>And finally, if you&#39;re lost or curious, see all the help options.</p><pre><code data-lang="text">cvm help
+</code></pre><p>That&#39;s it! Pretty similar to other programming language version manager tools.</p><hr><h1 id="Conclusion">Conclusion</h1><p>So should I change my process to use <code>cvm</code> now? Maybe? Probably not though. The existing brew install process for the language proper works, has worked for a long time, and as I said, will continue to be a supported first class citizen.
+Furthermore, in writing this post, it became clear there are a lot more steps to using <code>cvm</code>... so at this time, we don&#39;t even plan to make this the well-documented recommended approach anyway. Just a fun one for anyone else who may find
+themselves using multiple versions of Caffeine locally!</p><hr></div></article></main><footer class="site-footer"><div class="footer-content"><p>Built with <a href="https://gleam.run" target="_blank">Gleam</a> and <a href="https://github.com/lustre-labs/ssg" target="_blank">Lustre SSG</a></p><p>© 2026 <a href="https://brickellresearch.org/" target="_blank">Brickell Research</a></p></div></footer><script>
+        // Convert data-lang to language-* class for Prism
+        document.querySelectorAll('code[data-lang]').forEach(function(code) {
+          var lang = code.getAttribute('data-lang').toLowerCase();
+          // Map common language names
+          if (lang === 'dockerfile') lang = 'docker';
+          if (lang === 'js') lang = 'javascript';
+          code.classList.add('language-' + lang);
+          if (code.parentElement.tagName === 'PRE') {
+            code.parentElement.classList.add('language-' + lang);
+          }
+        });
+        if (typeof Prism !== 'undefined') { Prism.highlightAll(); }
+        // Generate Table of Contents
+        document.querySelectorAll('.post-content .toc').forEach(function(tocContainer) {
+          var headers = document.querySelectorAll('.post-content h1[id], .post-content h2[id], .post-content h3[id], .post-content h4[id]');
+
+          if (headers.length === 0) return;
+
+          // Function to convert number to Roman numeral
+          function toRoman(num) {
+            var romans = [
+              ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1]
+            ];
+            var result = '';
+            for (var i = 0; i < romans.length; i++) {
+              while (num >= romans[i][1]) {
+                result += romans[i][0];
+                num -= romans[i][1];
+              }
+            }
+            return result;
+          }
+
+          // Function to convert number to letter (1=a, 2=b, etc.)
+          function toLetter(num) {
+            return String.fromCharCode(96 + num); // 97 is 'a'
+          }
+
+          var tocTitle = document.createElement('div');
+          tocTitle.className = 'toc-title';
+          tocTitle.textContent = 'Table of Contents';
+
+          var tocList = document.createElement('ul');
+          var currentH1 = null;
+          var currentH2 = null;
+          var currentH3 = null;
+          var h1Count = 0;
+          var h2Count = 0;
+          var h3Count = 0;
+
+          headers.forEach(function(header) {
+            var level = header.tagName.toLowerCase();
+            var text = header.textContent.replace('#', '').trim();
+            var link = document.createElement('a');
+            link.href = '#' + header.id;
+
+            if (level === 'h1') {
+              h1Count++;
+              h2Count = 0;
+              h3Count = 0;
+              link.textContent = toRoman(h1Count) + '. ' + text;
+            } else if (level === 'h2') {
+              h2Count++;
+              h3Count = 0;
+              link.textContent = toLetter(h2Count) + '. ' + text;
+            } else if (level === 'h3') {
+              h3Count++;
+              link.textContent = h3Count + '. ' + text;
+            } else {
+              link.textContent = text;
+            }
+
+            var li = document.createElement('li');
+            li.appendChild(link);
+
+            if (level === 'h1') {
+              tocList.appendChild(li);
+              currentH1 = li;
+              currentH2 = null;
+              currentH3 = null;
+            } else if (level === 'h2' && currentH1) {
+              if (!currentH1.querySelector('ul')) {
+                var ul = document.createElement('ul');
+                currentH1.appendChild(ul);
+              }
+              currentH1.querySelector('ul').appendChild(li);
+              currentH2 = li;
+              currentH3 = null;
+            } else if (level === 'h2') {
+              tocList.appendChild(li);
+              currentH2 = li;
+              currentH3 = null;
+            } else if (level === 'h3' && currentH2) {
+              if (!currentH2.querySelector('ul')) {
+                var ul = document.createElement('ul');
+                currentH2.appendChild(ul);
+              }
+              currentH2.querySelector('ul').appendChild(li);
+              currentH3 = li;
+            } else if (level === 'h4' && currentH3) {
+              if (!currentH3.querySelector('ul')) {
+                var ul = document.createElement('ul');
+                currentH3.appendChild(ul);
+              }
+              currentH3.querySelector('ul').appendChild(li);
+            }
+          });
+
+          tocContainer.appendChild(tocTitle);
+          tocContainer.appendChild(tocList);
+        });
+
+        // Add anchor links to headers
+        document.querySelectorAll('.post-content h1[id], .post-content h2[id], .post-content h3[id], .post-content h4[id]').forEach(function(header) {
+          var anchor = document.createElement('span');
+          anchor.className = 'header-anchor';
+          anchor.innerHTML = '#';
+          anchor.setAttribute('aria-label', 'Copy link to ' + header.textContent);
+          header.insertBefore(anchor, header.firstChild);
+
+          // Make entire header clickable to copy URL
+          header.style.cursor = 'pointer';
+          header.addEventListener('click', function(e) {
+            var url = window.location.origin + window.location.pathname + '#' + header.id;
+
+            // Update URL bar
+            window.history.pushState(null, '', '#' + header.id);
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(url).then(function() {
+              // Show feedback
+              var originalText = anchor.innerHTML;
+              anchor.innerHTML = '✓';
+              setTimeout(function() {
+                anchor.innerHTML = originalText;
+              }, 1000);
+            }).catch(function(err) {
+              console.error('Failed to copy:', err);
+            });
+          });
+        });
+
+        // Subscribe form handler with execute-on-demand Turnstile
+        var subscribeForm = document.getElementById('subscribe-form');
+        if (subscribeForm) {
+          subscribeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var email = document.getElementById('subscribe-email').value;
+            var website = subscribeForm.querySelector('input[name="website"]').value;
+            var message = document.getElementById('subscribe-message');
+            var button = subscribeForm.querySelector('button');
+
+            // Show verifying state
+            button.disabled = true;
+            button.textContent = 'Verifying...';
+            message.textContent = '';
+            message.className = 'subscribe-message';
+
+            // Load Turnstile script on-demand if not yet loaded
+            function loadTurnstile(cb) {
+              if (typeof turnstile !== 'undefined') return cb();
+              var s = document.createElement('script');
+              s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+              window.onTurnstileLoad = function() { cb(); };
+              s.onerror = function() {
+                message.textContent = 'Verification failed to load. Please try again.';
+                message.className = 'subscribe-message error';
+                button.disabled = false;
+                button.textContent = 'Subscribe';
+              };
+              document.head.appendChild(s);
+            }
+
+            loadTurnstile(function() {
+            // Get fresh token by executing Turnstile
+            turnstile.execute('#turnstile-widget', {
+              callback: function(token) {
+                button.textContent = 'Subscribing...';
+
+                fetch('https://notifications.brickellresearch.org/subscribe', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    email: email,
+                    website: website,
+                    'cf-turnstile-response': token
+                  })
+                })
+                .then(function(response) {
+                  return response.json().then(function(data) {
+                    return { ok: response.ok, data: data };
+                  });
+                })
+                .then(function(result) {
+                  if (result.ok) {
+                    message.textContent = result.data.message || 'Check your email to confirm!';
+                    message.className = 'subscribe-message success';
+                    subscribeForm.reset();
+                  } else {
+                    message.textContent = result.data.error || 'Something went wrong';
+                    message.className = 'subscribe-message error';
+                  }
+                })
+                .catch(function(err) {
+                  message.textContent = 'Network error. Please try again.';
+                  message.className = 'subscribe-message error';
+                })
+                .finally(function() {
+                  button.textContent = 'Subscribe';
+                  button.disabled = false;
+                  // Reset for next submission
+                  turnstile.reset('#turnstile-widget');
+                });
+              },
+              'error-callback': function() {
+                message.textContent = 'Verification failed. Please try again.';
+                message.className = 'subscribe-message error';
+                button.textContent = 'Subscribe';
+                button.disabled = false;
+                turnstile.reset('#turnstile-widget');
+              }
+            });
+            });
+          });
+        }
+      </script></body></html></body></html>

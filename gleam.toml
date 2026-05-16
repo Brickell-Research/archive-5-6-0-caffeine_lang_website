@@ -1,0 +1,20 @@
+name = "caffeine_lang_website"
+version = "0.0.1"
+target = "erlang"
+
+description = "Blog site for the Caffeine language"
+licences = ["GPL-3.0"]
+repository = { type = "github", user = "Brickell-Research", repo = "caffeine_lang_website" }
+
+[dependencies]
+gleam_stdlib = ">= 0.44.0 and < 0.68.0"
+lustre = ">= 5.4.0 and < 6.0.0"
+simplifile = ">= 2.0.0 and < 3.0.0"
+lustre_ssg = ">= 0.8.0 and < 1.0.0"
+mist = ">= 5.0.0 and < 6.0.0"
+gleam_http = ">= 4.0.0 and < 5.0.0"
+gleam_erlang = ">= 0.29.0 and < 2.0.0"
+tom = ">= 1.1.1 and < 2.0.0"
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"

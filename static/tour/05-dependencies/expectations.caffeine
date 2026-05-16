@@ -1,0 +1,14 @@
+Expectations measured by "Simple_SLO"
+  * "checkout_slo":
+    Provides {
+      service_name: "checkout-api",
+      threshold: 99.9%
+    }
+  * "payment_slo":
+    Provides {
+      service_name: "payment-api",
+      threshold: 99.5%,
+      depends_on: {
+        hard: ["tour.demo.service.checkout_slo"]
+      }
+    }
