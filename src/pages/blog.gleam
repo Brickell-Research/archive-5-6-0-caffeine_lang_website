@@ -50,28 +50,31 @@ fn list_posts(all_posts: List(Post)) -> List(Element(Nil)) {
             attribute.attribute("data-tags", string.join(post.tags, ",")),
           ],
           [
-            html.a([attribute.href("/blog/" <> post.slug)], [
-              html.h2([], [html.text(post.title)]),
-              html.p([attribute.class("post-date")], [
-                html.text(
-                  post.date
-                  <> " · by "
-                  <> post.author
-                  <> " · "
-                  <> reading_time_text,
+            html.a(
+              [attribute.href("https://caffeine-lang.run/blog/" <> post.slug)],
+              [
+                html.h2([], [html.text(post.title)]),
+                html.p([attribute.class("post-date")], [
+                  html.text(
+                    post.date
+                    <> " · by "
+                    <> post.author
+                    <> " · "
+                    <> reading_time_text,
+                  ),
+                ]),
+                html.p([attribute.class("post-summary")], [
+                  html.text(post.summary),
+                ]),
+                html.div(
+                  [attribute.class("post-tags")],
+                  post.tags
+                    |> list.map(fn(tag) {
+                      html.span([attribute.class("tag")], [html.text(tag)])
+                    }),
                 ),
-              ]),
-              html.p([attribute.class("post-summary")], [
-                html.text(post.summary),
-              ]),
-              html.div(
-                [attribute.class("post-tags")],
-                post.tags
-                  |> list.map(fn(tag) {
-                    html.span([attribute.class("tag")], [html.text(tag)])
-                  }),
-              ),
-            ]),
+              ],
+            ),
           ],
         )
       })
